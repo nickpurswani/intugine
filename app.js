@@ -21,7 +21,7 @@ app.post("/intugine/:collection",(req,res)=>{
   ur= req.body.url;
   collection2 = req.query.collection2;
   let da = []
-  MongoClient.connect(url, function (err, db) {
+  MongoClient.connect(ur, function (err, db) {
     if (err) throw err;
     var dbo = db.db("__CONCOX__");
     let data = {}
