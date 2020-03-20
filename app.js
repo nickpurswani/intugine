@@ -1,10 +1,11 @@
 var express = require("express");
 var HTTP_PORT = 8000;
 var app = express();
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 const fetch = require("node-fetch");
 var MongoClient = require('mongodb').MongoClient;
 var url = "mongodb+srv://backendconcoxdeveloper:V3jUV7QXqEoAtnhy@cluster0-zhjde.mongodb.net";
-var collection1,collection2,ur;
+let collection1,collection2,ur;
 
 
 var bodyParser = require("body-parser");
@@ -12,7 +13,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 app.set("view engine","ejs");
 app.get("/",(req,res)=>{
-  res.sendFile(__dirname+"/index.html");
+  res.sendFile(__dirname+"/index.htm");
 
 });
 app.post("/intugine/:collection",(req,res)=>{
@@ -24,49 +25,58 @@ app.post("/intugine/:collection",(req,res)=>{
     if (err) throw err;
     var dbo = db.db("__CONCOX__");
     let data = {}
-    var myPromise = () => (
       
     dbo.collection(collection1).find().limit(30).sort({ createdAt: -1 }).toArray(function (err, result) {
-      new Promise((resolve, reject) => {
       
-      result.forEach(r => {
-dbo.collection(collection2).find({ 'device': r.id }).limit(50).toArray((error, devices) => {
+      for(let i=0;i<result.length;i++){    
+dbo.collection(collection2).find({ 'device': result[i].id }).limit(50).toArray((error, devices) => {
+  if(err){
+    console.log("error")
+  }
+  
+    data[result[i].id] = devices,
+    
+    
+    console.log(i)
+    if(i==(result.length-1)){
+      
+      res.json({'name':'nikhil purswani','email':'201752025@iiitvadodara.ac.in',data});
+    }
+  
+  });
+}
+    
+    
+    
+    
+});
+
+})
+
+
+})
+app.post('/map',(req,res)=>{
+  
+addresses = JSON.parse(req.body.address);
+
+let da=[]
+
+for(let i=0;i<addresses.length;i++){
+  let myRequest = new XMLHttpRequest();
+    myRequest.open('GET','https://maps.googleapis.com/maps/api/geocode/json?address='+addresses[i]+',+CA&key=AIzaSyA5bwbEsAOUMOI4RK2zXcIayG4vjuQSpcw'); 
+    myRequest.onload = function() {
+      let streamerInfo = JSON.parse(myRequest.responseText);
+      da.push({"lat":streamerInfo.results[0].geometry.location.lat,"long":streamerInfo.results[0].geometry.location.lng});
+      if(da.length==(addresses.length)){
+        res.json(da)
+      }    
+    };
+    
+    myRequest.send();
+
+  }
  
-  err
-  ? reject(err)
-  : resolve(data[r.id] = devices,
-    da.push(data),
-    console.log(da[0])
-    );
-
-  
-    })
-    
-    
-    
-}
-);
-
-})
-}
-));
-
-var callMyPromise = async () => {
-          
-  var re = await (myPromise());
-  //anything here is executed after result is resolved
-  console.log(da[0]); 
-  return re;
-};
-callMyPromise().then(function(re) {
-  
-    client.close();
-    res.json({'name':'nikhil purswani','email':'201752025@iiitvadodara.ac.in'},da[0]);
-  console.log(da[0]);
-  }); 
-})
-})
-
+});
 
 
 app.use(function (req, res, next) {
